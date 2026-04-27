@@ -1,7 +1,7 @@
 import express from "express";
 import { tavily } from '@tavily/core';
 import { GoogleGenAI } from "@google/genai";
-
+import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from "./prompt";
 
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY});
 const apiKey : string = process.env.GEMINI_API_KEY || "null";
@@ -19,9 +19,42 @@ app.post("/perplexity_ask",async (req,res)=>{
         searchDepth: "advanced"
     })
     const webSearchResults = webSearch.results;
+    console.log(webSearchResults)
+    const combinedPrompt = `
+        ${SYSTEM_PROMPT}
 
+        ${PROMPT_TEMPLATE
+        .replace("{{WEB_SEARCH_RESULTS}}", JSON.stringify(webSearchResults))
+        .replace("{{USER_QUERY}}", query)}
+    `;
+
+    await chatWithGemini(combinedPrompt);
     
-
+    res.json({
+        msg : "check your console"
+    })
 })
 
-app.listen(3000);
+
+async function chatWithGemini(combinedPrompt : string){
+    try {
+        const result = await genAI.models.generateContent({
+            model : "gemini-2.5-flash-lite",
+            contents : [{
+                parts : [{
+                    text : combinedPrompt
+                }]
+            }]
+        });
+
+        const responseText = result.text;
+        console.log("Gemini Text is : ", responseText);
+         
+    } catch (error:any) {
+        console.error("Error calling Gemini:", error.message);
+    }
+}
+
+app.listen(3000,()=>{
+    console.log('Server is Listing to the Port ')
+});
