@@ -12,14 +12,25 @@ const app = express();
 
 app.use(express.json());
 
+app.post("/signup",(req,res)=>{
+
+})
+
+app.post("/signin",(req,res)=>{
+    
+})
+
+
 app.post("/perplexity_ask",async (req,res)=>{
     const query = req.body.query;
 
     const webSearch= await client.search(query, {
         searchDepth: "advanced"
-    })
+    });
+
     const webSearchResults = webSearch.results;
-    console.log(webSearchResults)
+
+    // console.log(webSearchResults)
     const combinedPrompt = `
         ${SYSTEM_PROMPT}
         ${PROMPT_TEMPLATE
@@ -27,34 +38,44 @@ app.post("/perplexity_ask",async (req,res)=>{
         .replace("{{USER_QUERY}}", query)}
     `;
 
-    await chatWithGemini(combinedPrompt);
+    const responseText = await chatWithGemini(combinedPrompt);
     
-    res.json({
-        msg : "check your console"
-    })
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Connection", "keep-alive");
+
+    res.flushHeaders();
+
+    res.write(`data: ${responseText}\n\n`);
+
+    webSearchResults.forEach(result => {
+        res.write(`data: ${JSON.stringify(result)}\n\n`);
+    });
+
+    res.end();
 })
+
 
 
 async function chatWithGemini(combinedPrompt : string){
     try {
-        // const result = await genAI.models.generateContent({
-        //     model : "gemini-2.5-flash-lite",
-        //     contents : [{
-        //         parts : [{
-        //             text : combinedPrompt
-        //         }]
-        //     }]
-        // });
-        const { text } = await generateText({
-            model: "anthropic/claude-sonnet-4.5",
-            prompt: "What is love?",
-          });
-        console.log(text);
-         
+        const result = await genAI.models.generateContent({
+            model : "gemini-2.5-flash-lite",
+            contents : [{
+                parts : [{
+                    text : combinedPrompt
+                }]
+            }]
+        });
+
+        const responseText = result.text;
+        console.log("Gemini Text is : ", responseText);
+        return responseText;        
     } catch (error:any) {
-        console.error("Error calling SDK:", error.message);
+        console.error("Error calling Gemini:", error.message);
     }
 }
+
 
 app.listen(3000,()=>{
     console.log('Server is Listing to the Port ')
