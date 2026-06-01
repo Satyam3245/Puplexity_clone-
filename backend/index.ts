@@ -2,7 +2,7 @@ import express from "express";
 import { tavily } from '@tavily/core';
 import { GoogleGenAI } from "@google/genai";
 import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from "./prompt";
-
+import { generateText } from "ai";
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY});
 const apiKey : string = process.env.GEMINI_API_KEY || "null";
 
@@ -22,7 +22,6 @@ app.post("/perplexity_ask",async (req,res)=>{
     console.log(webSearchResults)
     const combinedPrompt = `
         ${SYSTEM_PROMPT}
-
         ${PROMPT_TEMPLATE
         .replace("{{WEB_SEARCH_RESULTS}}", JSON.stringify(webSearchResults))
         .replace("{{USER_QUERY}}", query)}
@@ -38,20 +37,22 @@ app.post("/perplexity_ask",async (req,res)=>{
 
 async function chatWithGemini(combinedPrompt : string){
     try {
-        const result = await genAI.models.generateContent({
-            model : "gemini-2.5-flash-lite",
-            contents : [{
-                parts : [{
-                    text : combinedPrompt
-                }]
-            }]
-        });
-
-        const responseText = result.text;
-        console.log("Gemini Text is : ", responseText);
+        // const result = await genAI.models.generateContent({
+        //     model : "gemini-2.5-flash-lite",
+        //     contents : [{
+        //         parts : [{
+        //             text : combinedPrompt
+        //         }]
+        //     }]
+        // });
+        const { text } = await generateText({
+            model: "anthropic/claude-sonnet-4.5",
+            prompt: "What is love?",
+          });
+        console.log(text);
          
     } catch (error:any) {
-        console.error("Error calling Gemini:", error.message);
+        console.error("Error calling SDK:", error.message);
     }
 }
 

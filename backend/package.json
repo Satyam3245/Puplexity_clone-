@@ -13,6 +13,7 @@
     "@google/genai": "^1.50.1",
     "@tavily/core": "^0.7.2",
     "@types/express": "^5.0.6",
+    "ai": "^6.0.193",
     "express": "^5.2.1"
   }
 }
