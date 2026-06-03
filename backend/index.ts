@@ -5,19 +5,17 @@ import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from "./prompt";
 import { generateText } from "ai";
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY});
 const apiKey : string = process.env.GEMINI_API_KEY || "null";
-
+import cors from "cors";
 const genAI = new GoogleGenAI({apiKey});
 
 const app = express();
 
 app.use(express.json());
-
-app.post("/signup",(req,res)=>{
-
-})
-
-app.post("/signin",(req,res)=>{
-    
+app.use(cors());
+app.get('/conversations',(req,res)=>{
+    res.json({
+        userid : req.userId
+    })
 })
 
 
