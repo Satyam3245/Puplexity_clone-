@@ -39,7 +39,7 @@ export function Header(){
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
             <span className="text-white font-bold text-lg border-none rounded-xl p-1 bg-blue-700">✨</span>
           </div>
-          <span className="text-xl font-bold text-white">Perplexity</span>
+          <span className="text-xl font-bold text-white">Mind</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
