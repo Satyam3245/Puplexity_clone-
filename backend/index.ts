@@ -2,20 +2,25 @@ import express from "express";
 import { tavily } from '@tavily/core';
 import { GoogleGenAI } from "@google/genai";
 import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from "./prompt";
-import { generateText } from "ai";
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY});
-const apiKey : string = process.env.GEMINI_API_KEY || "null";
 import cors from "cors";
-const genAI = new GoogleGenAI({apiKey});
+import { chatWithGemini } from "./utils";
+
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
 app.get('/conversations',(req,res)=>{
     res.json({
         userid : req.userId
     })
+})
+
+app.get("/conversation/:conversationId",(req,res)=>{
+    const {conversationId} = req.params;
+    res.send("Conversation Id is :" + conversationId )
 })
 
 
@@ -37,44 +42,14 @@ app.post("/perplexity_ask",async (req,res)=>{
     `;
 
     const responseText = await chatWithGemini(combinedPrompt);
-    
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Connection", "keep-alive");
 
-    res.flushHeaders();
-
-    res.write(`data: ${responseText}\n\n`);
-
-    webSearchResults.forEach(result => {
-        res.write(`data: ${JSON.stringify(result)}\n\n`);
-    });
-
-    res.end();
+    res.send(responseText);
 })
 
+app.post('/followups',(req,res)=>{
 
+})
 
-async function chatWithGemini(combinedPrompt : string){
-    try {
-        const result = await genAI.models.generateContent({
-            model : "gemini-2.5-flash-lite",
-            contents : [{
-                parts : [{
-                    text : combinedPrompt
-                }]
-            }]
-        });
-
-        const responseText = result.text;
-        console.log("Gemini Text is : ", responseText);
-        return responseText;        
-    } catch (error:any) {
-        console.error("Error calling Gemini:", error.message);
-    }
-}
-
-
-app.listen(3000,()=>{
+app.listen(3001,()=>{
     console.log('Server is Listing to the Port ')
 });
