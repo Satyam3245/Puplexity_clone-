@@ -1,3 +1,4 @@
+import CTA from "@/components/cta";
 import { Features } from "@/components/feature";
 import Footer from "@/components/footer";
 import GetInfo from "@/components/getinfo";
@@ -11,6 +12,7 @@ export default function Home(){
             <Hero />
             <Features/>
             <GetInfo/>
+            <CTA/>
             <Footer/>
       </main>
     </>
